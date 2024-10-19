@@ -1,0 +1,96 @@
+plugins {
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.3'
+    id 'java'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudGcpVersion', "4.0.0")
+}
+
+// Declare custom configurations for PostgreSQL and Datastore
+configurations {
+    postgresImplementation.extendsFrom implementation
+    datastoreImplementation.extendsFrom implementation
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Shared dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+
+    // PostgreSQL-specific dependencies
+    implementation('org.postgresql:postgresql:42.6.0')
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+
+    // Datastore-specific dependencies
+    implementation "com.google.cloud:spring-cloud-gcp-starter-data-datastore:${springCloudGcpVersion}"
+    implementation "com.google.cloud:spring-cloud-gcp-data-datastore:${springCloudGcpVersion}"
+
+    implementation "org.mapstruct:mapstruct:1.5.5.Final"
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+
+    implementation "org.projectlombok:lombok:1.18.28"
+    annotationProcessor "org.projectlombok:lombok:1.18.28"
+
+    // Other common dependencies
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
+    }
+}
+
+// Set the main class globally for Spring Boot tasks
+springBoot {
+    mainClass = 'com.example.CartPocApplication'  // Replace with your actual main class
+}
+
+// Custom task for PostgreSQL JAR
+task buildPostgresJar(type: org.springframework.boot.gradle.tasks.bundling.BootJar) {
+    group = 'build'
+    description = 'Builds a jar including only PostgreSQL dependencies'
+
+    archiveBaseName.set("app-postgres")
+    mainClass.set("com.example.CartPocApplication")  // Replace with your actual main class
+
+    targetJavaVersion.set(JavaVersion.VERSION_17)
+
+    // PostgreSQL-specific classpath
+    classpath = configurations.postgresImplementation
+}
+
+// Custom task for Datastore JAR
+task buildDatastoreJar(type: org.springframework.boot.gradle.tasks.bundling.BootJar) {
+    group = 'build'
+    description = 'Builds a jar including only Datastore dependencies'
+
+    archiveBaseName.set("app-datastore")
+    mainClass.set("com.example.CartPocApplication")  // Replace with your actual main class
+
+    targetJavaVersion.set(JavaVersion.VERSION_17)
+
+    // Datastore-specific classpath
+    classpath = configurations.datastoreImplementation
+}
+
+// Ensure both tasks depend on the standard bootJar process
+build {
+    dependsOn buildPostgresJar, buildDatastoreJar
+}

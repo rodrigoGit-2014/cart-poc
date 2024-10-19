@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE:postgres}
+logging:
+  level:
+    org.springframework: INFO
+    org.springframework.beans.factory: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+debug: false

@@ -1,0 +1,18 @@
+
+spring:
+  cloud:
+    gcp:
+      datastore:
+        enabled: false
+  autoconfigure:
+    exclude:
+      - com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: myuser
+    password: mysecretpassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
